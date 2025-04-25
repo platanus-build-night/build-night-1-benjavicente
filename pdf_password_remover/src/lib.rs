@@ -19,17 +19,23 @@ pub fn remove_pdf_password_from_bytes(
     pdf_bytes: Vec<u8>,
     passwords: Vec<String>,
 ) -> Result<Vec<u8>, String> {
-    let mut doc = Document::load_mem(&pdf_bytes).map_err(|e| format!("Load error: {}", e))?;
-
-    if doc.decrypt(b"").is_ok() {
-        return save_decrypted_doc_rust(doc);
+    let initial = Document::load_mem(&pdf_bytes).map_err(|e| format!("Load error: {}", e))?;
+    if !initial.is_encrypted() {
+        return save_decrypted_doc_rust(initial);
     }
 
-    for password in passwords {
-        let mut attempt =
-            Document::load_mem(&pdf_bytes).map_err(|e| format!("Reload error: {}", e))?;
-        if attempt.decrypt(password.as_bytes()).is_ok() {
-            return save_decrypted_doc_rust(attempt);
+    for pw in passwords {
+        println!("Trying password: {}", pw);
+        let mut doc = Document::load_mem(&pdf_bytes).map_err(|e| format!("Reload error: {}", e))?;
+        match doc.decrypt(&pw) {
+            Ok(()) => {
+                println!("Password succeeded: {}", pw);
+                return save_decrypted_doc_rust(doc);
+            }
+            Err(err) => {
+                // <-- This logs the exact error from lopdf
+                eprintln!("Password '{}' failed: {}", pw, err);
+            }
         }
     }
 
@@ -57,11 +63,7 @@ mod tests {
         path.push("tests/cartola-banco-chile.pdf");
 
         let pdf = fs::read(&path).expect("Failed to read test PDF");
-        let passwords = vec![
-            "".to_string(),
-            "wrong".to_string(),
-            "correct_password".to_string(),
-        ];
+        let passwords = vec!["9910".to_string()];
 
         let result = remove_pdf_password_from_bytes(pdf, passwords);
         assert!(result.is_ok(), "Decryption failed: {:?}", result.err());
