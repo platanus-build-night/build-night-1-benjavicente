@@ -58,7 +58,7 @@ function RouteComponent() {
               }).format(new Date(items[0].year, items[0].month - 1, items[0].day))}
             </div>
             <>
-              {items.map(({ _id, name, amount, category, accountIdentifier }) => (
+              {items.map(({ _id, name, amount, category }) => (
                 <BankMovementItem
                   key={_id}
                   amount={amount}
