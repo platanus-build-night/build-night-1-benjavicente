@@ -16,6 +16,7 @@ const emailRoute = "robots@tiuke.money";
 let wasmReady = false;
 
 export default {
+  // @ts-expect-error TODO
   async fetch(request, env, ctx) {
     return new Response(null, { status: 404 });
   },
