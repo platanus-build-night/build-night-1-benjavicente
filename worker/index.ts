@@ -8,24 +8,16 @@ import initWASM, { remove_pdf_password } from "../pdf_password_remover/pkg/pdf_p
 import wasm from "../pdf_password_remover/pkg/pdf_password_remover_bg.wasm";
 import { Buffer } from "node:buffer";
 import { schema, systemInstruction } from "./ai";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../convex/_generated/api.js";
+import { Id } from "../convex/_generated/dataModel.js";
 
 const emailRoute = "robots@tiuke.money";
 let wasmReady = false;
 
 export default {
-  // fetch(request) {
-  //   const url = new URL(request.url);
-
-  //   if (url.pathname.startsWith("/api/")) {
-  //     return Response.json({
-  //       name: "Cloudflare",
-  //     });
-  //   }
-  // return new Response(null, { status: 404 });
-  // },
-  // ignore unused ctx
-
   async email(message, env, _ctx) {
+    let runId: Id<"runs">;
     try {
       if (!wasmReady) {
         await initWASM(wasm);
@@ -33,6 +25,12 @@ export default {
       }
 
       const ai = new GoogleGenAI({ apiKey: env.GOOGLE_AI_API_KEY });
+      const convex = new ConvexHttpClient(env.CONVEX_URL);
+
+      runId = await convex.mutation(api.runs.create, {
+        secretKey: env.SERVER_SECRET,
+        email: message.from,
+      });
 
       const rawEmail = new Response(message.raw);
       const email = await PostalMine.parse(await rawEmail.arrayBuffer());
@@ -90,12 +88,24 @@ export default {
       });
 
       if (!response.text) throw new Error("No data found");
-      const data = JSON.parse(response.text);
 
-      if (data.items.length > 0) {
+      if (response.text.length < 8) {
         console.info("No data found");
         return;
       }
+
+      const [added] = await Promise.all([
+        convex.action(api.movements.addMovementsWithAI, {
+          data: response.text,
+          email: message.from,
+          secretKey: env.SERVER_SECRET,
+        }),
+        convex.mutation(api.runs.update, {
+          run: runId,
+          state: "processing",
+          secretKey: env.SERVER_SECRET,
+        }),
+      ]);
 
       const msg = createMimeMessage();
       msg.setSender({ name: "Tiuke Robots", addr: emailRoute });
@@ -104,7 +114,7 @@ export default {
       msg.setSubject("Re: " + email.subject);
       msg.addMessage({
         contentType: "text/plain",
-        data: response.text!,
+        data: `Añadí ${added} movimientos a tu cuenta. Puedes verlos en la app.`,
       });
 
       console.info("msg", JSON.stringify(msg.headers));
@@ -112,6 +122,11 @@ export default {
       const replyMessage = new EmailMessage(emailRoute, message.from, msg.asRaw());
 
       await message.reply(replyMessage);
+      await convex.mutation(api.runs.update, {
+        run: runId,
+        state: "ready",
+        secretKey: env.SERVER_SECRET,
+      });
     } catch (error) {
       console.error("Error processing email", error);
       // TODO: handle error

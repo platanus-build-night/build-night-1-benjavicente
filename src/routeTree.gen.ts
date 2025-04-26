@@ -11,14 +11,24 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AboutImport } from './routes/about'
+import { Route as LoginImport } from './routes/login'
+import { Route as LoggedInImport } from './routes/_logged-in'
 import { Route as IndexImport } from './routes/index'
+import { Route as LoggedInRequestAnInviteImport } from './routes/_logged-in/request-an-invite'
+import { Route as LoggedInAppImport } from './routes/_logged-in/app'
+import { Route as LoggedInAppIndexImport } from './routes/_logged-in/app/index'
+import { Route as LoggedInAppAboutImport } from './routes/_logged-in/app/about'
 
 // Create/Update Routes
 
-const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
+const LoginRoute = LoginImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LoggedInRoute = LoggedInImport.update({
+  id: '/_logged-in',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -26,6 +36,30 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const LoggedInRequestAnInviteRoute = LoggedInRequestAnInviteImport.update({
+  id: '/request-an-invite',
+  path: '/request-an-invite',
+  getParentRoute: () => LoggedInRoute,
+} as any)
+
+const LoggedInAppRoute = LoggedInAppImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => LoggedInRoute,
+} as any)
+
+const LoggedInAppIndexRoute = LoggedInAppIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LoggedInAppRoute,
+} as any)
+
+const LoggedInAppAboutRoute = LoggedInAppAboutImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => LoggedInAppRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -39,51 +73,145 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
+    '/_logged-in': {
+      id: '/_logged-in'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LoggedInImport
       parentRoute: typeof rootRoute
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginImport
+      parentRoute: typeof rootRoute
+    }
+    '/_logged-in/app': {
+      id: '/_logged-in/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof LoggedInAppImport
+      parentRoute: typeof LoggedInImport
+    }
+    '/_logged-in/request-an-invite': {
+      id: '/_logged-in/request-an-invite'
+      path: '/request-an-invite'
+      fullPath: '/request-an-invite'
+      preLoaderRoute: typeof LoggedInRequestAnInviteImport
+      parentRoute: typeof LoggedInImport
+    }
+    '/_logged-in/app/about': {
+      id: '/_logged-in/app/about'
+      path: '/about'
+      fullPath: '/app/about'
+      preLoaderRoute: typeof LoggedInAppAboutImport
+      parentRoute: typeof LoggedInAppImport
+    }
+    '/_logged-in/app/': {
+      id: '/_logged-in/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof LoggedInAppIndexImport
+      parentRoute: typeof LoggedInAppImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface LoggedInAppRouteChildren {
+  LoggedInAppAboutRoute: typeof LoggedInAppAboutRoute
+  LoggedInAppIndexRoute: typeof LoggedInAppIndexRoute
+}
+
+const LoggedInAppRouteChildren: LoggedInAppRouteChildren = {
+  LoggedInAppAboutRoute: LoggedInAppAboutRoute,
+  LoggedInAppIndexRoute: LoggedInAppIndexRoute,
+}
+
+const LoggedInAppRouteWithChildren = LoggedInAppRoute._addFileChildren(
+  LoggedInAppRouteChildren,
+)
+
+interface LoggedInRouteChildren {
+  LoggedInAppRoute: typeof LoggedInAppRouteWithChildren
+  LoggedInRequestAnInviteRoute: typeof LoggedInRequestAnInviteRoute
+}
+
+const LoggedInRouteChildren: LoggedInRouteChildren = {
+  LoggedInAppRoute: LoggedInAppRouteWithChildren,
+  LoggedInRequestAnInviteRoute: LoggedInRequestAnInviteRoute,
+}
+
+const LoggedInRouteWithChildren = LoggedInRoute._addFileChildren(
+  LoggedInRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '': typeof LoggedInRouteWithChildren
+  '/login': typeof LoginRoute
+  '/app': typeof LoggedInAppRouteWithChildren
+  '/request-an-invite': typeof LoggedInRequestAnInviteRoute
+  '/app/about': typeof LoggedInAppAboutRoute
+  '/app/': typeof LoggedInAppIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '': typeof LoggedInRouteWithChildren
+  '/login': typeof LoginRoute
+  '/request-an-invite': typeof LoggedInRequestAnInviteRoute
+  '/app/about': typeof LoggedInAppAboutRoute
+  '/app': typeof LoggedInAppIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/_logged-in': typeof LoggedInRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_logged-in/app': typeof LoggedInAppRouteWithChildren
+  '/_logged-in/request-an-invite': typeof LoggedInRequestAnInviteRoute
+  '/_logged-in/app/about': typeof LoggedInAppAboutRoute
+  '/_logged-in/app/': typeof LoggedInAppIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths:
+    | '/'
+    | ''
+    | '/login'
+    | '/app'
+    | '/request-an-invite'
+    | '/app/about'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to: '/' | '' | '/login' | '/request-an-invite' | '/app/about' | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/_logged-in'
+    | '/login'
+    | '/_logged-in/app'
+    | '/_logged-in/request-an-invite'
+    | '/_logged-in/app/about'
+    | '/_logged-in/app/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  LoggedInRoute: typeof LoggedInRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  LoggedInRoute: LoggedInRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +225,42 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about"
+        "/_logged-in",
+        "/login"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/about": {
-      "filePath": "about.tsx"
+    "/_logged-in": {
+      "filePath": "_logged-in.tsx",
+      "children": [
+        "/_logged-in/app",
+        "/_logged-in/request-an-invite"
+      ]
+    },
+    "/login": {
+      "filePath": "login.tsx"
+    },
+    "/_logged-in/app": {
+      "filePath": "_logged-in/app.tsx",
+      "parent": "/_logged-in",
+      "children": [
+        "/_logged-in/app/about",
+        "/_logged-in/app/"
+      ]
+    },
+    "/_logged-in/request-an-invite": {
+      "filePath": "_logged-in/request-an-invite.tsx",
+      "parent": "/_logged-in"
+    },
+    "/_logged-in/app/about": {
+      "filePath": "_logged-in/app/about.tsx",
+      "parent": "/_logged-in/app"
+    },
+    "/_logged-in/app/": {
+      "filePath": "_logged-in/app/index.tsx",
+      "parent": "/_logged-in/app"
     }
   }
 }

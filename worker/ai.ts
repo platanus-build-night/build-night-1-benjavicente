@@ -11,7 +11,6 @@ Debes entregar los siguientes datos:
 - Monto, en formato float
 - Nombre del movimiento raw: el nombre original del movimiento
 - Nombre del movimiento: el nombre limpiado, eliminando información necesaria.
-- Categoría: en que clasifica el movimiento, dependiendo de las categorías.
 - Tipo: Si es un gasto o ingreso.
 - Identificador de la tarjeta o cuenta: usualmente es los últimos 4 dígitos de la tarjeta o cuenta.
 - Moneda: la moneda en la que se realizó el movimiento. Puede ser CLP, USD, EUR, etc.
