@@ -16,6 +16,9 @@ const emailRoute = "robots@tiuke.money";
 let wasmReady = false;
 
 export default {
+  async fetch(request, env, ctx) {
+    return new Response(null, { status: 404 });
+  },
   async email(message, env, _ctx) {
     let runId: Id<"runs">;
     try {
