@@ -42,34 +42,37 @@ Expandir abreviaciones.
 No dejar en minúsculas abreviaciones desconocidas.
 
 El esquema de cada transferencia es el siguiente:
-
 ${JSON.stringify(schema)}
+No añadas espacios innecesarios en el JSON.
 `;
 
 export const schema: Schema = {
-  type: Type.OBJECT,
-  properties: {
-    day: { type: Type.INTEGER },
-    month: { type: Type.INTEGER },
-    year: { type: Type.INTEGER },
-    amount: { type: Type.NUMBER },
-    raw_transaction_name: { type: Type.STRING },
-    clean_transaction_name: { type: Type.STRING },
-    category: { type: Type.STRING },
-    type: { type: Type.STRING },
-    account_identifier: { type: Type.STRING },
-    currency: { type: Type.STRING },
+  type: Type.ARRAY,
+  items: {
+    type: Type.OBJECT,
+    properties: {
+      day: { type: Type.INTEGER },
+      month: { type: Type.INTEGER },
+      year: { type: Type.INTEGER },
+      amount: { type: Type.NUMBER },
+      raw_transaction_name: { type: Type.STRING },
+      clean_transaction_name: { type: Type.STRING },
+      category: { type: Type.STRING },
+      type: { type: Type.STRING },
+      account_identifier: { type: Type.STRING },
+      currency: { type: Type.STRING },
+    },
+    required: [
+      "day",
+      "month",
+      "year",
+      "amount",
+      "raw_transaction_name",
+      "clean_transaction_name",
+      "category",
+      "type",
+      "account_identifier",
+      "currency",
+    ],
   },
-  required: [
-    "day",
-    "month",
-    "year",
-    "amount",
-    "raw_transaction_name",
-    "clean_transaction_name",
-    "category",
-    "type",
-    "account_identifier",
-    "currency",
-  ],
 } as const;

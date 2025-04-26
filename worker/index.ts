@@ -7,7 +7,7 @@ import { EmailMessage } from "cloudflare:email";
 import initWASM, { remove_pdf_password } from "../pdf_password_remover/pkg/pdf_password_remover";
 import wasm from "../pdf_password_remover/pkg/pdf_password_remover_bg.wasm";
 import { Buffer } from "node:buffer";
-import { systemInstruction } from "./ai";
+import { schema, systemInstruction } from "./ai";
 
 const emailRoute = "robots@tiuke.money";
 let wasmReady = false;
@@ -84,10 +84,18 @@ export default {
         ],
         config: {
           systemInstruction: systemInstruction(),
+          responseMimeType: "application/json",
+          responseSchema: schema,
         },
       });
 
-      console.info(JSON.stringify(response));
+      if (!response.text) throw new Error("No data found");
+      const data = JSON.parse(response.text);
+
+      if (data.items.length > 0) {
+        console.info("No data found");
+        return;
+      }
 
       const msg = createMimeMessage();
       msg.setSender({ name: "Tiuke Robots", addr: emailRoute });
