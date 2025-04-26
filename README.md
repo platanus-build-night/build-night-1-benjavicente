@@ -19,3 +19,4 @@ Automatizando finanzas personales.
 - Usar agregación, para ver la cantidad gastada por categoría
 - Encontrar como evitar repetición de procesamiento (emails repetidos)
 - Permitir que se pueda enviar automáticamente correos (aceptar solicitud de email de google)
+- Guardar las contraseñas que desbloquean los PDFs

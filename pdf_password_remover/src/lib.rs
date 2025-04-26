@@ -63,7 +63,7 @@ mod tests {
         path.push("tests/cartola-banco-chile.pdf");
 
         let pdf = fs::read(&path).expect("Failed to read test PDF");
-        let passwords = vec!["9910".to_string()];
+        let passwords = vec!["XXXX".to_string()];
 
         let result = remove_pdf_password_from_bytes(pdf, passwords);
         assert!(result.is_ok(), "Decryption failed: {:?}", result.err());

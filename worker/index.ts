@@ -55,7 +55,7 @@ export default {
           }
 
           console.info("extracting pdf buffer");
-          const pdfWithoutPassword = await remove_pdf_password(new Uint8Array(pdfBuffer), ["9910"]);
+          const pdfWithoutPassword = await remove_pdf_password(new Uint8Array(pdfBuffer), ["XXXX"]);
           const file = Buffer.from(pdfWithoutPassword).toString("base64");
           console.info("pdf buffer extracted");
           base64Files.push({ data: file, mimeType: pdf.mimeType });
